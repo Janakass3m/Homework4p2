@@ -84,11 +84,22 @@ overall_error
 ```
 
 ```{r}
+# --- Build a predictions table that keeps appt_time (and other useful cols) ---
+test_feats <- featurize(test)
+
+# probabilities (using the same order as test_feats)
+test_p    <- as.numeric(predict(rf, newdata = test_feats %>% select(all_of(model_vars)), type = "prob")[, "1"])
+test_pred <- as.integer(test_p >= t_star)
+
+preds_out <- test_feats %>%
+  mutate(prob_no_show = test_p,
+         pred_no_show = test_pred) %>%
+  # keep only what the Shiny app needs
+  select(appt_time, provider_id, address, age, specialty, prob_no_show, pred_no_show)
+
+# write the file the app will read
+readr::write_csv(preds_out, "test_with_predictions.csv")
 saveRDS(rf, "model_rf.rds")
-readr::write_csv(
-  test_x %>% mutate(prob_no_show = test_p, pred_no_show = test_pred),
-  "test_with_predictions.csv"
-)
 
 ```
 
