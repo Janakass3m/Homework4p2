@@ -10,15 +10,21 @@ library(RColorBrewer)
 
 # Load in data
 read_predictions <- function(path = "test_with_predictions.csv") {
-  if (!file.exists(path)) stop("Can't find 'test_with_predictions.csv'")
-  df <- readr::read_csv(path, show_col_types = FALSE) %>%
-    mutate(
+  df <- tryCatch(
+    readr::read_csv(path, show_col_types = FALSE),
+    error = function(e) NULL
+  )
+  shiny::validate(
+    shiny::need(!is.null(df), "Could not load 'test_with_predictions.csv'")
+  )
+  
+  df |>
+    dplyr::mutate(
       appt_datetime = lubridate::as_datetime(appt_time),
       provider      = as.factor(provider_id)
     )
-  stopifnot("appt_datetime" %in% names(df), "prob_no_show" %in% names(df))
-  df
 }
+
 
 raw <- read_predictions()
 
