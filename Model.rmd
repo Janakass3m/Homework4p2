@@ -83,7 +83,7 @@ test_x  <- test_x  %>% select(all_of(model_vars), no_show)
 
 Selected a Random Forest classifier because it handles both numerical and categorical predictors, captures nonlinear relationships, and is robust to outliers.
 
-The model ensemble consisted of 500 trees (ntree = 500), with each split considering approximately √(number of predictors) features (mtry = sqrt(p)), a common heuristic for classification.
+I used a Random Forest with 500 trees, and at each split, the model randomly considered about the square root of the total number of features. This is a common, effective setup that helps the model generalize well instead of memorizing the training data.
 
 Random Forest was chosen over logistic regression to capture complex interactions between features like day of week, provider, and patient demographics.
 
@@ -107,7 +107,7 @@ train_p <- as.numeric(predict(rf, newdata = train_x, type = "prob")[, "1"])
 
 Instead of using a default 0.5 cutoff, the model searched for the optimal threshold between 0.05 and 0.95 that minimized the overall misclassification rate on the training data.
 
-The selected threshold was approximately 0.55, meaning that appointments with predicted probability ≥ threshold are classified as no-shows.
+The selected threshold was approximately 0.55, meaning that appointments with predicted probability greater than or equal to the threshold are classified as no-shows.
 
 ```{r}
 # Tries thresholds from 0.05 to 0.95 and picks the one with the 
@@ -180,3 +180,7 @@ saveRDS(list(model = rf, threshold = t), "model_rf_with_threshold.rds")
 
 
 ```
+
+### Deviations From Proposed Design
+
+I implemented all major elements from my original design. The only minor change was adjusting the hover text for each hour from “Consider overbooking +1” to simply “Consider overbooking.” This change gives schedulers more flexibility to decide how many additional appointments to add based on their own judgment and contextual knowledge. For example, schedulers may know that certain times of year (such as December) tend to have higher cancellation rates and can adjust accordingly.
